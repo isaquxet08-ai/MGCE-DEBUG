@@ -1,5 +1,4 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">MobileGlues</string>
 
     <string name="info_author" translatable="false">Swung, BZLZHH, Tungsten</string>
     <string name="info_copyright" translatable="false">GNU LGPL-2.1 License</string>
