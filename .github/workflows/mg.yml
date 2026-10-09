@@ -63,8 +63,53 @@ jobs:
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
 
-      - name: Upload apk
+      - name: Rename APK
+        run: |
+          cd app/build/outputs/apk/release/
+          for f in *.apk; do
+            mv "$f" "MGCE-dbg-build${{ github.run_number }}.apk"
+          done
+          ls -lh
+
+      - name: Upload apk as artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.repository_name }}_${{ env.date_today }}_${{ github.sha }}
-          path: app/build/outputs/apk/release/
+          path: app/build/outputs/apk/release/*.apk
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: "MGCE Debug Build #${{ github.run_number }}"
+          body: |
+            ## MGCE Debug Build
+
+            **Build Number**: #${{ github.run_number }}
+            **Date**: ${{ env.date_today }}
+            **Commit**: `${{ github.sha }}`
+            **Branch**: `${{ github.ref_name }}`
+
+            ### About this build
+            This is an automatically built debug version of MobileGlues CE.
+            - Package: `com.fcl.plugin.mobileglues.dbg`
+            - Signed with MGCE debug keystore
+            - For testing purposes only
+
+            本版本为自动构建的调试版本，仅供测试使用。
+
+            ### Installation
+            1. Uninstall any previous MGCE version
+            2. Install this APK
+            3. Enable in FCL plugin manager
+            4. Select as renderer for Minecraft 26.3+
+
+            ### Known Issues
+            - Terrain blocks may not render correctly on Mali GPUs
+            - See repository README for details
+          files: app/build/outputs/apk/release/*.apk
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
