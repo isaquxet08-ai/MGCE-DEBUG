@@ -48,6 +48,11 @@ jobs:
           echo "y" | sdkmanager "ndk;27.3.13750724"
           echo "ndk.dir=$ANDROID_HOME/ndk/27.3.13750724" >> local.properties
 
+      - name: Fetch keystore
+        run: |
+          git clone --depth 1 https://${{ secrets.KEYSTORE_REPO_TOKEN }}@github.com/isaquxet08-ai/MGCE-Keystore.git /tmp/ks
+          cp /tmp/ks/my-release-key.jks keystore.jks
+
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
