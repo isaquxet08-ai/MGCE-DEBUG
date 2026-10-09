@@ -16,6 +16,15 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Fetch C++ dependencies
+        run: |
+          cd MobileGlues
+          git clone --depth 1 https://github.com/stbrumme/xxhash.git MobileGlues-cpp/3rdparty/xxhash
+          git clone --depth 1 https://github.com/KhronosGroup/glslang.git MobileGlues-cpp/3rdparty/glslang
+          git clone --depth 1 https://github.com/KhronosGroup/SPIRV-Cross.git MobileGlues-cpp/3rdparty/SPIRV-Cross
+          git clone --depth 1 https://github.com/MobileGL-Dev/flat_hash_map.git MobileGlues-cpp/include/ska
+          git clone --depth 1 https://android.googlesource.com/platform/external/perfetto MobileGlues-cpp/3rdparty/perfetto
+
       - name: Set current date as env variable
         run: echo "date_today=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
