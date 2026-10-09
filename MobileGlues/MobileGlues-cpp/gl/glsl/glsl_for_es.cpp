@@ -249,7 +249,7 @@ std::string process_uniform_declarations(const std::string& glslCode) {
     result.reserve(glslCode.length());
 
     while (scan_pos < length) {
-        if (glslCode.compare(scan_pos, 7, "uniform") == 0) {
+        if (glslCode.compare(scan_pos, 7, "uniform") == 0 && (scan_pos == 0 || !(std::isalnum((unsigned char)glslCode[scan_pos - 1]) || glslCode[scan_pos - 1] == 95)) && (scan_pos + 7 >= length || !(std::isalnum((unsigned char)glslCode[scan_pos + 7]) || glslCode[scan_pos + 7] == 95))) {
             if (scan_pos > chunk_start) {
                 result.append(glslCode, chunk_start, scan_pos - chunk_start);
             }
