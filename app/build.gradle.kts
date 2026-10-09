@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+val buildStage = System.getenv("BUILD_STAGE") ?: "dbg"
+
 android {
     namespace = "com.fcl.plugin.mobileglues"
     compileSdk = 36
@@ -11,7 +13,7 @@ android {
     ndkVersion = "27.3.13750724"
 
     defaultConfig {
-        applicationId = "com.fcl.plugin.mobileglues"
+        applicationId = "com.fcl.plugin.mobileglues.${buildStage}"
         minSdk = 26
         targetSdk = 36
         versionCode = 2000
@@ -40,7 +42,7 @@ android {
         }
 
         configureEach {
-            resValue("string","app_name","MobileGlues")
+            resValue("string","app_name","MGCE-${buildStage}")
 
             manifestPlaceholders["des"] = "MobileGlues (OpenGL 4.0, 1.17+)"
             manifestPlaceholders["renderer"] = "MobileGlues:libmobileglues.so:libmobileglues.so"

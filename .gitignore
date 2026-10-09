@@ -25,3 +25,14 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# === MGCE: Sensitive files ===
+# Keystore 和签名相关（绝不入库）
+*.jks
+*.keystore
+*.base64
+
+# 备份文件
+*.bak
+*.bak.*
+*.orig

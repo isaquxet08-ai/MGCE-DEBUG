@@ -54,3 +54,57 @@ Check whether the `certificate DN` and `certificate digest` portion matches exac
 
 In order that you may want to check against public key file, `pub.cer` and `pub.pem` are also provided.
 You can use your utility as you like to check your apk against those files.
+
+---
+
+## MGCE Community Edition / MGCE 社区版
+
+This repository is a community-maintained fork of MobileGlues, adding
+experimental support for Minecraft 26.3+ on Mali GPUs.
+
+本仓库为 MobileGlues 的社区维护分支，为 Mali GPU 设备增加对
+Minecraft 26.3+ 的实验性支持。
+
+### Credits / 署名
+
+| Role / 角色 | Author / 作者 | Project / 项目 |
+|---|---|---|
+| Original renderer / 原渲染器核心 | @BZLZHH, @Swung0x48 | [MobileGlues](https://github.com/MobileGL-Dev/MobileGlues) |
+| vkshim source / vkshim 源码 | FCL-Team | [FoldCraftLauncher](https://github.com/FCL-Team/FoldCraftLauncher) |
+| CE integration / 社区版整合 | isaquxet08-ai | This repo / 本仓库 |
+
+### Package Naming Convention / 包名命名规则
+
+| Suffix / 后缀 | Package Name / 完整包名 | Stage / 阶段 |
+|---|---|---|
+| `.dbg` | `com.fcl.plugin.mobileglues.dbg` | Debug / 调试版 |
+| `.ala` | `com.fcl.plugin.mobileglues.ala` | Alpha / 内测版 |
+| `.bta` | `com.fcl.plugin.mobileglues.bta` | Beta / 公测版 |
+| `.rese` | `com.fcl.plugin.mobileglues.rese` | Release / 正式版 |
+
+**Different suffixes = different apps.** Uninstall old version before
+installing a different stage.
+
+**不同后缀 = 不同应用。** 切换阶段需先卸载旧版本。
+
+### Icon Color Convention / 图标颜色规则
+
+Each stage has a unique base color on the app icon.
+
+每个阶段在图标底部有专属颜色。
+
+| Stage / 阶段 | Color / 颜色 |
+|---|---|
+| Debug | 🔴 Red / 红色 |
+| Alpha | 🟠 Orange / 橙色 |
+| Beta | 🔵 Blue / 蓝色 |
+| Release | 🟣 Magenta / 洋红 |
+
+### License / 许可证
+
+This project is released under **GNU LGPL-2.1**, consistent with the
+upstream MobileGlues project.
+
+本项目以 **GNU LGPL-2.1** 发布，与上游 MobileGlues 保持一致。
+
+See `LICENSE` for details. / 详见 `LICENSE`。
