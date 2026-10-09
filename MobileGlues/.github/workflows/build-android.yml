@@ -1,0 +1,30 @@
+name: MGCE Building
+on: [push, workflow_dispatch]
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: nttld/setup-ndk@v1
+        id: ndk
+        with:
+          ndk-version: r27c
+
+      - name: Build
+        run: |
+          cd MobileGlues-cpp
+          cmake -B build \
+            -DCMAKE_TOOLCHAIN_FILE=${{ steps.ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-26 \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --target mobileglues
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MobileGlues-Android
+          path: MobileGlues-cpp/build/**/*.so
