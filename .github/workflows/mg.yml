@@ -43,6 +43,17 @@ jobs:
           git clone --depth 1 https://github.com/MobileGL-Dev/flat_hash_map.git MobileGlues-cpp/include/ska
           git clone --depth 1 https://android.googlesource.com/platform/external/perfetto MobileGlues-cpp/3rdparty/perfetto
 
+      - name: Read build number
+        id: ver
+        run: |
+          if [ -f btv.txt ]; then
+            BUILD=$(cat btv.txt | tr -d '[:space:]')
+          else
+            BUILD=1
+          fi
+          echo "build=$BUILD" >> $GITHUB_OUTPUT
+          echo "Build number: $BUILD"
+
       - name: Determine stage
         id: stage
         run: |
@@ -85,9 +96,6 @@ jobs:
           sed -i "s|@mipmap/ic_launcher_foreground[a-z_]*\"|@mipmap/ic_launcher_foreground_${STAGE}\"|" ic_launcher.xml ic_launcher_round.xml
           echo "=== ic_launcher.xml ==="
           cat ic_launcher.xml
-          echo ""
-          echo "=== ic_launcher_round.xml ==="
-          cat ic_launcher_round.xml
 
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
@@ -104,33 +112,82 @@ jobs:
         run: |
           cd app/build/outputs/apk/release/
           for f in *.apk; do
-            mv "$f" "MGCE-${{ steps.stage.outputs.stage }}-build${{ github.run_number }}.apk"
+            mv "$f" "MGCE-${{ steps.stage.outputs.stage }}-build${{ steps.ver.outputs.build }}.apk"
           done
           ls -lh
 
       - name: Upload apk as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MGCE-${{ steps.stage.outputs.stage }}-${{ env.date_today }}-${{ github.run_number }}
+          name: MGCE-${{ steps.stage.outputs.stage }}-${{ env.date_today }}-b${{ steps.ver.outputs.build }}
           path: app/build/outputs/apk/release/*.apk
 
       - name: Create Release
         if: github.event.inputs.publish == 'yes'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.stage.outputs.stage }}-build-${{ github.run_number }}
-          name: "MGCE ${{ steps.stage.outputs.stage }} Build #${{ github.run_number }}"
+          tag_name: ${{ steps.stage.outputs.stage }}-build-${{ steps.ver.outputs.build }}
+          name: "MGCE ${{ steps.stage.outputs.stage }} — Build #${{ steps.ver.outputs.build }} (${{ env.date_today }})"
           body: |
-            ## MGCE ${{ steps.stage.outputs.stage }} Build
+            ## MobileGlues CE — ${{ steps.stage.outputs.stage }} Build #${{ steps.ver.outputs.build }}
 
-            - **Stage**: ${{ steps.stage.outputs.stage }}
-            - **Build**: #${{ github.run_number }}
-            - **Date**: ${{ env.date_today }}
-            - **Commit**: `${{ github.sha }}`
+            **Date**: ${{ env.date_today }}  
+            **Commit**: `${{ github.sha }}`  
+            **Package**: `com.fcl.plugin.mobileglues.${{ steps.stage.outputs.stage }}`
 
-            Auto-built from GitHub Actions.
+            ---
+
+            ### ⚠️ Read before installing / 安装前必读
+
+            This is an **experimental build**. It works on some Mali GPUs but
+            **transparent blocks (water, glass, ice) may render incorrectly**.
+
+            本版本为**实验性构建**。在部分 Mali GPU 上可正常运行，但
+            **透明方块（水、玻璃、冰）可能渲染异常**。
+
+            ### 🛠 Requirements / 使用要求
+
+            1. **FCL 1.3.3.7** or newer
+            2. Set **OpenGL Error Setting** to **"Ignore shader/program/framebuffer error"**
+            3. Delete cached shaders before first launch
+
+            1. **FCL 1.3.3.7** 或更新
+            2. 将 **OpenGL 报错设置** 改为 **"忽略 shader/program/framebuffer 报错"**
+            3. 首次启动前删除着色器缓存
+
+            ### 📦 Installation / 安装
+
+            1. Uninstall any previous MGCE or MobileGlues version
+            2. Install this APK
+            3. Open FCL → Version Settings → Renderer → select **MobileGlues CE**
+            4. Launch Minecraft 26.3+
+
+            ### 🐛 Reporting Issues / 反馈问题
+
+            Include: device model, GPU, screenshot, and log from `/sdcard/MG/latest.log`
+
+            ### 🙏 Credits / 致谢
+
+            - Original renderer core: [MobileGlues](https://github.com/MobileGL-Dev/MobileGlues)
+            - vkshim source: [FoldCraftLauncher](https://github.com/FCL-Team/FoldCraftLauncher)
+            - CE integration: [isaquxet08-ai](https://github.com/isaquxet08-ai)
+
+            ---
+
+            **Official source / 官方地址**: https://github.com/isaquxet08-ai/MGCE-DEBUG
           files: app/build/outputs/apk/release/*.apk
           draft: false
           prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Bump build number
+        if: success()
+        run: |
+          NEXT=$(( ${{ steps.ver.outputs.build }} + 1 ))
+          echo "$NEXT" > btv.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add btv.txt
+          git commit -m "chore: bump build number to $NEXT [skip ci]" || echo "no changes"
+          git push || echo "push skipped"
