@@ -108,3 +108,62 @@ upstream MobileGlues project.
 本项目以 **GNU LGPL-2.1** 发布，与上游 MobileGlues 保持一致。
 
 See `LICENSE` for details. / 详见 `LICENSE`。
+
+---
+
+## Known Issues / 已知问题
+
+### Transparency rendering / 透明渲染
+
+**Status: Partially broken / 部分异常**
+
+27 shaders related to OIT (Order-Independent Transparency) fail to compile
+on Mali GPUs. As a result, transparent blocks may render incorrectly or not
+at all.
+
+27 个与 OIT（顺序无关透明）相关的着色器在 Mali GPU 上编译失败。
+因此透明方块可能渲染异常或完全不渲染。
+
+**Affected / 受影响:**
+- Water / 水
+- Glass / 玻璃
+- Ice / 冰
+- Certain particles / 部分粒子效果
+
+**Not affected / 不受影响:**
+- Opaque terrain blocks (grass, stone, dirt, wood, etc.)
+- 不透明地形方块（草地、石头、泥土、木头等）
+
+**Root cause / 根因:**
+
+GLES 3.2 requires fragment output array indices to be compile-time constants.
+Minecraft 26.3's OIT shaders use dynamic indices, which GLES rejects. A fix
+based on static index expansion is under development.
+
+GLES 3.2 要求片元输出数组的索引必须是编译期常量。Minecraft 26.3 的 OIT
+着色器使用了动态索引，被 GLES 拒绝。基于静态索引展开的修复正在开发中。
+
+### Tested configuration / 已测试配置
+
+- Device / 设备: Vivo PD2019 (V2002A)
+- GPU: Mali-G76
+- CPU: Exynos 880
+- Android: 10
+- FCL: 1.3.3.7
+- Java: JRE 25
+
+Other devices may behave differently. Reports are welcome.
+其他设备表现可能不同，欢迎反馈。
+
+---
+
+## Requirements / 使用要求
+
+Before launching Minecraft 26.3+ with this renderer:
+使用本渲染器启动 Minecraft 26.3+ 前：
+
+1. Set **OpenGL Error Setting** to **"Ignore shader/program/framebuffer error"**
+2. 将 **OpenGL 报错设置** 设为 **"忽略 shader/program/framebuffer 报错"**
+
+Without this setting, the game will crash on shader compile failure.
+不设置此项，游戏会在着色器编译失败时崩溃。
