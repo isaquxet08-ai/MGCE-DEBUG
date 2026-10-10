@@ -10,6 +10,9 @@
 
 #include <GL/gl.h>
 #include "log.h"
+#include <map>
+#include <cstdio>
+static std::map<GLuint, std::string> g_mgce_glsl_sources;
 #include "program.h"
 #include "../gles/loader.h"
 #include "../includes.h"
@@ -100,6 +103,7 @@ void glShaderSource(GLuint shader, GLsizei count, const GLchar* const* string, c
         shaderInfo.converted = essl_src;
         const char* s[] = {essl_src.c_str()};
         GLES.glShaderSource(shader, count, s, nullptr);
+        g_mgce_glsl_sources[shader] = essl_src;
         if (hardware->emulate_texture_buffer)
             shader_map_is_sampler_buffer_emulated[shader] = is_sampler_buffer_emulated;
     } else
@@ -110,6 +114,16 @@ void glShaderSource(GLuint shader, GLsizei count, const GLchar* const* string, c
 void glGetShaderiv(GLuint shader, GLenum pname, GLint* params) {
     LOG()
     GLES.glGetShaderiv(shader, pname, params);
+    if (pname == GL_COMPILE_STATUS) {
+        auto _it = g_mgce_glsl_sources.find(shader);
+        if (_it != g_mgce_glsl_sources.end()) {
+            const char* _dir = *params ? "success" : "failed";
+            char _path[512];
+            snprintf(_path, sizeof(_path), "/sdcard/MG/logs/%s/shader_%u.glsl", _dir, shader);
+            FILE* _f = fopen(_path, "w");
+            if (_f) { fprintf(_f, "%s", _it->second.c_str()); fclose(_f); }
+        }
+    }
     if (global_settings.ignore_error >= IgnoreErrorLevel::Partial && pname == GL_COMPILE_STATUS && !*params) {
         GLchar infoLog[512];
         GLES.glGetShaderInfoLog(shader, 512, nullptr, infoLog);
