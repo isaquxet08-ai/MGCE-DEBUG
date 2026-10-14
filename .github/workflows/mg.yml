@@ -43,6 +43,14 @@ jobs:
           git clone --depth 1 https://github.com/MobileGL-Dev/flat_hash_map.git MobileGlues-cpp/include/ska
           git clone --depth 1 https://android.googlesource.com/platform/external/perfetto MobileGlues-cpp/3rdparty/perfetto
 
+      - name: Fetch prebuilt vkshim.so from MGCE-Builds
+        run: |
+          git clone --depth 1 https://github.com/isaquxet08-ai/MGCE-Builds.git /tmp/builds
+          mkdir -p app/src/main/jniLibs/arm64-v8a
+          cp /tmp/builds/lib/arm64-v8a/libvkshim.so app/src/main/jniLibs/arm64-v8a/
+          ls -lh app/src/main/jniLibs/arm64-v8a/
+          file app/src/main/jniLibs/arm64-v8a/libvkshim.so
+
       - name: Read build number
         id: ver
         run: |
@@ -108,6 +116,12 @@ jobs:
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
 
+      - name: Verify APK contains libvkshim.so
+        run: |
+          APK=$(ls app/build/outputs/apk/release/*.apk | head -1)
+          echo "APK: $APK"
+          unzip -l "$APK" | grep -i "vkshim" || echo "WARNING: libvkshim.so NOT in APK"
+
       - name: Rename APK
         run: |
           cd app/build/outputs/apk/release/
@@ -127,54 +141,44 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.stage.outputs.stage }}-build-${{ steps.ver.outputs.build }}
-          name: "MGCE ${{ steps.stage.outputs.stage }} — Build #${{ steps.ver.outputs.build }} (${{ env.date_today }})"
+          name: "MGCE ${{ steps.stage.outputs.stage }} - Build #${{ steps.ver.outputs.build }} (${{ env.date_today }})"
           body: |
-            ## MobileGlues CE — ${{ steps.stage.outputs.stage }} Build #${{ steps.ver.outputs.build }}
+            ## MobileGlues CE - ${{ steps.stage.outputs.stage }} Build #${{ steps.ver.outputs.build }}
 
-            **Date**: ${{ env.date_today }}  
-            **Commit**: `${{ github.sha }}`  
-            **Package**: `com.fcl.plugin.mobileglues.${{ steps.stage.outputs.stage }}`
+            **Date**: ${{ env.date_today }}
+            **Commit**: ${{ github.sha }}
+            **Package**: com.fcl.plugin.mobileglues.${{ steps.stage.outputs.stage }}
 
-            ---
+            ### Read before installing
 
-            ### ⚠️ Read before installing / 安装前必读
+            Experimental build. Transparent blocks (water, glass, ice)
+            may render incorrectly on some Mali GPUs.
 
-            This is an **experimental build**. It works on some Mali GPUs but
-            **transparent blocks (water, glass, ice) may render incorrectly**.
+            ### Requirements
 
-            本版本为**实验性构建**。在部分 Mali GPU 上可正常运行，但
-            **透明方块（水、玻璃、冰）可能渲染异常**。
-
-            ### 🛠 Requirements / 使用要求
-
-            1. **FCL 1.3.3.7** or newer
-            2. Set **OpenGL Error Setting** to **"Ignore shader/program/framebuffer error"**
+            1. FCL 1.3.3.7+
+            2. Set OpenGL Error Setting to "Ignore shader/program/framebuffer error"
             3. Delete cached shaders before first launch
 
-            1. **FCL 1.3.3.7** 或更新
-            2. 将 **OpenGL 报错设置** 改为 **"忽略 shader/program/framebuffer 报错"**
-            3. 首次启动前删除着色器缓存
+            ### Installation
 
-            ### 📦 Installation / 安装
-
-            1. Uninstall any previous MGCE or MobileGlues version
+            1. Uninstall previous MGCE/MobileGlues
             2. Install this APK
-            3. Open FCL → Version Settings → Renderer → select **MobileGlues CE**
-            4. Launch Minecraft 26.3+
+            3. In FCL: Version Settings -> Renderer -> select MobileGlues CE
 
-            ### 🐛 Reporting Issues / 反馈问题
+            ### Reporting
 
-            Include: device model, GPU, screenshot, and log from `/sdcard/MG/latest.log`
+            Include device model, GPU, screenshot, and /sdcard/MG/latest.log
 
-            ### 🙏 Credits / 致谢
+            ### Credits
 
-            - Original renderer core: [MobileGlues](https://github.com/MobileGL-Dev/MobileGlues)
-            - vkshim source: [FoldCraftLauncher](https://github.com/FCL-Team/FoldCraftLauncher)
-            - CE integration: [isaquxet08-ai](https://github.com/isaquxet08-ai)
+            - MobileGlues: https://github.com/MobileGL-Dev/MobileGlues
+            - vkshim: https://github.com/FCL-Team/FoldCraftLauncher
+            - CE integration: https://github.com/isaquxet08-ai
 
             ---
 
-            **Official source / 官方地址**: https://github.com/isaquxet08-ai/MGCE-DEBUG
+            Official source: https://github.com/isaquxet08-ai/MGCE-DEBUG
           files: app/build/outputs/apk/release/*.apk
           draft: false
           prerelease: true
